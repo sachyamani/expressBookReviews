@@ -27,7 +27,7 @@ regd_users.post("/login", (req,res) => {
     return res.status(403).send("invalid credentials");
   }
   const accessToken = jwt.sign({username}, JWT_SECRET, {expiresIn: "1d"});
-  req.session.accessToken = accessToken;
+  req.session.authorization = {accessToken};
   req.session.username = username;
   return res.json({accessToken});
 });
@@ -52,7 +52,8 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
 
 regd_users.delete("/auth/review/:isbn", (req, res) => {
     const isbn = req.params.isbn;
-    const username = req.session.authorization?.username;
+    const username = req.user.username;
+    const book = books[isbn];
   
     // Check if user is authenticated
     if (!username) {
@@ -64,7 +65,6 @@ regd_users.delete("/auth/review/:isbn", (req, res) => {
       return res.status(404).json({ message: "Book not found." });
     }
   
-    const book = books[isbn];
   
     // Check if the user has a review
     if (!book.reviews || !book.reviews[username]) {
